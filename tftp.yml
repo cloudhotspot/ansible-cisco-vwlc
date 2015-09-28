@@ -38,5 +38,5 @@
       become: yes
       when: tftp_daemon_status.stdout != ""
     - name: Start TFTP daemon
-      command: launchctl load {{ tftp_plist }}
+      command: launchctl load -F {{ tftp_plist }}
       become: yes
