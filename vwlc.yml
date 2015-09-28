@@ -1,0 +1,107 @@
+---
+- name: Start WLC
+  hosts: localhost
+  connection: local
+  roles:
+    - yaegashi.blockinfile
+  vars_files:
+    - vm_vars.yml
+    - wlc_vars.yml
+  handlers:
+    - include: handlers/vmware.yml
+  tasks:
+    - name: Start virtual machine
+      command: "'{{ vmrun_path }}' start '{{ vm_safe_dst_full_path }}/{{ vm_name }}.vmx'"
+
+- name: Introspect Virtual Machine information
+  hosts: localhost
+  connection: local
+  roles:
+    - yaegashi.blockinfile
+  vars_files:
+    - vm_vars.yml
+  tasks:
+    - name: Get vmnet8 IP address
+      shell: ifconfig vmnet8 | awk '/inet/{print $2}'
+      register: vmnet8_ip_address
+      changed_when: False
+    - name: Add next-server parameter to vmnet8 DHCP configuration
+      lineinfile: >
+        dest="{{ dhcpd_conf_path }}"
+        line="next-server {{ vmnet8_ip_address.stdout }};"
+        insertbefore=BOF
+      become: yes
+    - name: Get Ethernet0 MAC address
+      shell: cat '{{ vm_safe_dst_full_path }}/{{ vm_name }}.vmx' | awk -F'"' '/ethernet0.generatedAddress = /{print $2}'
+      register: vm_mac_address
+      changed_when: False
+
+- name: Configure VMWare DHCP
+  hosts: localhost
+  connection: local
+  roles:
+    - yaegashi.blockinfile
+  vars_files:
+    - vm_vars.yml
+    - wlc_vars.yml
+  handlers:
+    - include: handlers/vmware.yml
+  tasks:
+    - name: Add temporary DHCP reservation
+      blockinfile:
+        dest: '{{ dhcpd_conf_path }}'
+        insertafter: EOF
+        content: |
+          host wlc01 {
+            hardware ethernet {{ vm_mac_address.stdout }};
+            fixed-address {{ vmnet8_ip_address.stdout | regex_replace('(.*)\..*$', '\\1.127') }};
+            option domain-name-servers {{ vmnet8_ip_address.stdout | regex_replace('(.*)\..*$', '\\1.2') }};
+            option domain-name localdomain;
+            default-lease-time 1200;
+            max-lease-time 1200;  
+            option routers {{ vmnet8_ip_address.stdout | regex_replace('(.*)\..*$', '\\1.2') }};
+          }
+      become: yes
+      notify:
+        - stop vmware networking
+        - start vmware networking
+
+- name: Cleanup
+  hosts: localhost
+  connection: local
+  roles:
+    - yaegashi.blockinfile
+  vars_files:
+    - vm_vars.yml
+  handlers:
+    - include: handlers/vmware.yml
+  tasks:
+    - name: Wait for WLC to provision
+      local_action: wait_for host=192.168.174.127 port=22 delay=10 timeout=600
+      sudo: false
+    - name: Remove temporary DHCP reservation
+      blockinfile:
+        dest: '{{ dhcpd_conf_path }}'
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        content: ""
+      become: yes
+      notify:
+        - stop vmware networking
+        - start vmware networking
+    - name: Remove next-server parameter from vmnet8 DHCP configuration
+      lineinfile: >
+        dest="/Library/Preferences/VMware Fusion/vmnet8/dhcpd.conf"
+        line="next-server {{ vmnet8_ip_address.stdout }};"
+        state=absent
+      become: yes
+      notify:
+        - stop vmware networking
+        - start vmware networking
+    - name: Stop TFTP daemon if it was not previously running
+      command: launchctl unload {{ tftp_plist }}
+      become: yes
+      when: tftp_daemon_status.stdout == ""
+    - name: Remove TFTP config file
+      file: >
+        path="{{ tftp_path }}/ciscowlc.cfg"
+        state=absent
