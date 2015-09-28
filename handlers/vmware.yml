@@ -1,0 +1,7 @@
+---
+- name: stop vmware networking
+  command: '"/Applications/VMware Fusion.app/Contents/Library/vmnet-cli" --stop'
+  become: yes
+- name: start vmware networking
+  command: '"/Applications/VMware Fusion.app/Contents/Library/vmnet-cli" --start'
+  become: yes
