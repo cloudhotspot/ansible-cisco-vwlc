@@ -1,0 +1,13 @@
+---
+tftp_path: /Users/jmenga/Public/tftp
+tftp_plist: /System/Library/LaunchDaemons/tftp.plist
+
+dhcpd_conf_path: "/Library/Preferences/VMware Fusion/vmnet8/dhcpd.conf"
+
+vmrun_path: "/Applications/VMware\ Fusion.app/Contents/Library/vmrun"
+ova_source: "/Users/jmenga/Downloads/AIR-CTVM-K9-8-0-120-0.ova"
+vm_destination: "/Users/jmenga/Documents/Virtual Machines.localized"
+vm_name: "wlc01"
+vm_padded_destination: "{{ vm_destination }}/"
+vm_safe_dst: "{{ vm_padded_destination | dirname }}"
+vm_safe_dst_full_path: "{{ vm_safe_dst }}/{{ vm_name }}.vmwarevm"

@@ -1,0 +1,16 @@
+---
+wlc_name: wlc01
+wlc_admin_username: admin
+wlc_admin_password: Pass1234
+
+wlc_mgmt_ip_address: 192.168.1.6
+wlc_mgmt_ip_mask: 255.255.255.0
+wlc_mgmt_ip_gateway: 192.168.1.254
+wlc_dhcp_server_ip_address: 192.168.1.254 
+wlc_virtual_ip_address: 1.1.1.1
+
+wlc_mobility_group_name: "{{ wlc_name }}"
+wlc_rf_network_name: "{{ wlc_name }}"
+wlc_ntp_server: 64.99.80.30
+wlc_ntp_interval: 3600
+wlc_ssid: Test SSID

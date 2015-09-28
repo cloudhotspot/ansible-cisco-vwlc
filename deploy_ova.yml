@@ -1,0 +1,30 @@
+---
+- name: Verify ovftool is installed
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Check for ovftool
+      shell: pkgutil --pkgs | awk '/com.vmware.ovftool.application/'
+      register: pkgutil_ovftool
+      changed_when: False
+    - name: Fail if VMWare OVF Tools are not installed
+      fail: msg="VMWare OVF Tools are required.  Please install and retry."
+      when: 'not {{ pkgutil_ovftool.stdout | match("com.vmware.ovftool.application") }}'
+    - name: Get ovftool path
+      shell: pkgutil --files com.vmware.ovftool.application | grep -FE 'ovftool$'
+      register: ovftool_path
+      changed_when: false
+
+- name: Extract OVA
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vm_vars.yml
+  tasks:
+    - name: Extract OVA using ovftool
+      command: "'/{{ ovftool_path.stdout }}' '{{ ova_source }}' '{{ vm_safe_dst_full_path }}/{{ vm_name }}.vmx'"
+    - name: Configure Ethernet0 as Share with my Mac
+      lineinfile: >
+        dest='{{ vm_safe_dst_full_path }}/{{ vm_name }}.vmx'
+        regexp='^ethernet0.connectionType ='
+        line='ethernet0.connectionType = "nat"'

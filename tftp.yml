@@ -1,0 +1,42 @@
+---
+- name: Configure TFTP
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vm_vars.yml
+    - wlc_vars.yml
+  tasks: 
+    - name: Deploy TFTP plist
+      template: 
+        src: "templates/tftp.plist.j2" 
+        dest: "{{ tftp_plist }}"
+        mode: 0644
+      become: yes
+    - name: Ensure TFTP path exists
+      file: 
+        path: "{{ tftp_path }}"
+        state: directory
+        mode: 0777
+    - name: Deploy WLC file
+      template:
+        src: "{{ wlc_config_file | default('templates/ciscowlc.cfg.j2') }}"
+        dest: "{{ tftp_path }}/ciscowlc.cfg"
+
+- name: Start TFTP
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vm_vars.yml
+  tasks:
+    - name: Check if TFTP daemon is running
+      shell: launchctl list | awk /com.apple.tftp/
+      become: yes
+      register: tftp_daemon_status
+      changed_when: False
+    - name: Stop TFTP daemon
+      command: launchctl unload {{ tftp_plist }}
+      become: yes
+      when: tftp_daemon_status.stdout != ""
+    - name: Start TFTP daemon
+      command: launchctl load {{ tftp_plist }}
+      become: yes
