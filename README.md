@@ -14,7 +14,7 @@ This has been tested on the following system:
 - Mac OS X
 - <a href="http://www.vmware.com/products/fusion" target="_blank">VMWare Fusion</a> 7.x or higher
 - <a href="https://www.vmware.com/support/developer/ovf/" target="_blank">VMWare OVF Tools</a> 4.1 or higher (VMWare account may be required)
-- <a href="http://www.ansible.com/" target="_blank">Ansible 1.9.x or higher
+- <a href="http://www.ansible.com/" target="_blank">Ansible 1.9.x or higher (`brew install ansible`)
 - <a href="https://software.cisco.com/download/release.html?mdfid=284464214&softwareid=280926587&release=8.0.120.0&relind=AVAILABLE&rellifecycle=ED&reltype=latest" target="_blank">Cisco vWLC OVA Image</a> (CCO login required)
 
 This playbook also relies on the Ansible Galaxy <a href="https://github.com/yaegashi/ansible-role-blockinfile" target="_blank">yaegashi.blockinfile module</a>.  You must install this module prior to running the playbook:
