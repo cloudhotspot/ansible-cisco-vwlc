@@ -25,12 +25,6 @@
       shell: ifconfig vmnet8 | awk '/inet/{print $2}'
       register: vmnet8_ip_address
       changed_when: False
-    - name: Add next-server parameter to vmnet8 DHCP configuration
-      lineinfile: >
-        dest="{{ dhcpd_conf_path }}"
-        line="next-server {{ vmnet8_ip_address.stdout }};"
-        insertbefore=BOF
-      become: yes
     - name: Get Ethernet0 MAC address
       shell: cat '{{ vm_safe_dst_full_path }}/{{ vm_name }}.vmx' | awk -F'"' '/ethernet0.generatedAddress = /{print $2}'
       register: vm_mac_address
@@ -60,6 +54,7 @@
             default-lease-time 1200;
             max-lease-time 1200;  
             option routers {{ vmnet8_ip_address.stdout | regex_replace('(.*)\..*$', '\\1.2') }};
+            next-server {{ vmnet8_ip_address.stdout }};
           }
       become: yes
       notify:
