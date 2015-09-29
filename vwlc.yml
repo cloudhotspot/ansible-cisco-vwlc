@@ -16,8 +16,6 @@
 - name: Introspect Virtual Machine information
   hosts: localhost
   connection: local
-  roles:
-    - yaegashi.blockinfile
   vars_files:
     - vm_vars.yml
   tasks:
