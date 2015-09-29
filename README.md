@@ -1,6 +1,6 @@
 # Automating Deployment of Cisco vWLC on VMWare Fusion
 
-This Ansible playbook can be used to automate deployment of the Cisco Virtual Wireless LAN Controller (vWLC) on VMWare Fusion.  See <a href="http://pseudo.co.de/cisco-ansible-vwlc/" target="_blank">my blog post</a> for an in depth discussion on this playbook.
+This Ansible playbook can be used to automate deployment of the Cisco Virtual Wireless LAN Controller (vWLC) on VMWare Fusion.  See <a href="http://pseudo.co.de/ansible-cisco-vwlc/" target="_blank">my blog post</a> for an in depth discussion on this playbook.
 
 This has been tested on the following system:
 
