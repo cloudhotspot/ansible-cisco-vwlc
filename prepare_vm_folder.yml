@@ -20,6 +20,8 @@
     - name: Stop VM if it is running
       shell: "'{{ vmrun_path }}' stop '{{ vmx_path.stdout }}'"
       when: vmx_path is defined and vmx_path.stdout != ""
+    - name: Pause to allow VM to stop cleanly
+      pause: seconds=3
     - name: Remove existing VM path
       file: path='{{ vm_safe_dst_full_path }}' state=absent
     - name: Create VM path
